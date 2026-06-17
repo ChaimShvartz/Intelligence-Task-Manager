@@ -53,7 +53,5 @@ class ConnectionDB:
         with self.get_connection().cursor() as cursor:
             cursor.execute(cmd)
 
-if __name__ == '__main__':
-    db = ConnectionDB()
-    db.create_database()
-    db.create_tables()
+db = ConnectionDB()
+
