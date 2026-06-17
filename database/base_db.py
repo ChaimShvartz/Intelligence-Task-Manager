@@ -24,7 +24,7 @@ class BaseDB:
         place_holders = '%s, ' * (len(data) - 1) + '%s'
         with connection.cursor() as cursor:
             cursor.execute(f'''INSERT INTO {self.table_name}(
-                           {keys})VALUES({place_holders})''', [data.values()])
+                           {keys})VALUES({place_holders})''', [*data.values()])
             connection.commit()
             return cursor.lastrowid
         
@@ -40,5 +40,5 @@ class BaseDB:
         condition = condition or ''
         values = values or tuple()
         with self.connection.cursor(dictionary=True) as cursor:
-            cursor.execute(f'SELECT COUNT(*) FROM {self.table_name}' + condition, values)
-            return cursor.fetchall()
+            cursor.execute(f'SELECT COUNT(*) as count FROM {self.table_name} ' + condition, values)
+            return cursor.fetchone()['count']
