@@ -45,7 +45,7 @@ class ConnectionDB:
         difficulty INT NOT NULL,
         importance INT NOT NULL,
         status ENUM('NEW', 'ASSIGNED', 'IN_PROGRESS',
-          'COMPLETED', 'FAILED', 'CANCELLED') NOT NULL DEFAULT 'NEW',
+          'COMPLETED', 'FAILED', 'CANCELLED') NOT NULL,
         risk_level VARCHAR(10) NOT NULL,
         assigned_agent_id INT DEFAULT NULL
         )
