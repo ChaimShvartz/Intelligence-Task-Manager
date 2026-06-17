@@ -1,0 +1,2 @@
+class InvalidAgentDetails(Exception):
+    pass
