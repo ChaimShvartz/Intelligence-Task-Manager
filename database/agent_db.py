@@ -12,23 +12,15 @@ class AgentDB(BaseDB):
         return self.get_by_id(id)
         
     def create_agent(self, data):
-        try:
-            if data['agent_rank'] not in ('Junior', 'Senior', 'Commander'):
-                raise InvalidAgentDetails('Rank mast be one from: Junior / Senior / Commander')
-        except KeyError:
-            raise InvalidAgentDetails('Missing the rank key')
-        else:
-            agent_id = self.create(data)
-            return self.get_by_id(agent_id)
+        agent_id = self.create(data)
+        return self.get_by_id(agent_id)
     
     def update_agent(self, id:int, data:dict):
-        if 'id' in data:
-            raise InvalidAgentDetails('Unable to update ID')
         updated = self.update(id, data)
-        msg = 'agent updated successfully' if updated else 'nothing updated'
-        return msg
+        return self.get_by_id(id) if updated else {}
     
-    def deactivate_agent(self, id:int):
+    # The following function is not used, I left it in light of the test requirements
+    def deactivate_agent(self, id:int):  
         updated = self.update(id, {'is_active': False})
         msg = 'agent disabled successfully' if updated else 'nothing updated'
         return msg
@@ -51,6 +43,7 @@ class AgentDB(BaseDB):
         msg = 'The number of missions has been updated successfully' if updated else 'nothing updated'
         return msg
     
+    # The following function is not used, I left it in light of the test requirements
     def get_agent_performance(self, id:int):
         agent = self.get_by_id(id)
         completed = agent['completed_missions']
