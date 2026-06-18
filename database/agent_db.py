@@ -17,8 +17,9 @@ class AgentDB(BaseDB):
                 raise InvalidAgentDetails('Rank mast be one from: Junior / Senior / Commander')
         except KeyError:
             raise InvalidAgentDetails('Missing the rank key')
-        agent_id = self.create(data)
-        return self.get_by_id(agent_id)
+        else:
+            agent_id = self.create(data)
+            return self.get_by_id(agent_id)
     
     def update_agent(self, id:int, data:dict):
         if 'id' in data:
@@ -55,13 +56,18 @@ class AgentDB(BaseDB):
         completed = agent['completed_missions']
         failed = agent['failed_missions']
         total = completed + failed
+        try:
+            success_rate = round(completed / total * 100, 2)
+        except ZeroDivisionError:
+            success_rate = 0
         return {
             'total': total,
             'completed': completed,
             'failed': failed,
-            'success_rate': f'{round(completed / total * 100, 2)} %'
+            'success_rate': f'{success_rate} %'
         }
     
     def count_active_agents(self):
         return self.count('WHERE is_active = true')
     
+agent_db = AgentDB()
