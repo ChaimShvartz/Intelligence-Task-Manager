@@ -7,11 +7,6 @@ class MissionsDB(BaseDB):
         super().__init__('missions')
 
     def create_mission(self, data:dict):
-        try:
-            risk_level = self.get_risk_level(data['difficulty'], data['importance'])
-        except KeyError:
-            raise ValueError('mission must have difficulty and importance')
-        data.update(risk_level)
         id = self.create(data)
         return self.get_by_id(id)
 

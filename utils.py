@@ -5,10 +5,10 @@ class InvalidAgentDetails(Exception):
     pass
 
 class AgentNotFoundError(Exception):
-    detail = 'agent not found'
+    detail = 'Agent not found'
 
 class MissionNotFoundError(Exception):
-    detail = 'mission not found'
+    detail = 'Mission not found'
 
 class AgentModelCreating(BaseModel):
     name: str
@@ -40,3 +40,23 @@ def get_agent_performance(agent:dict, id:int):
         'failed': failed,
         'success_rate': f'{success_rate} %'
     }
+
+class MissionModelCreating(BaseModel):
+    title: str
+    description: str
+    location: str
+    difficulty: int
+    importance: int
+    status: str | None = 'NEW'
+
+def get_risk_level(difficulty:int, importance:int):
+    result = difficulty * 2 + importance
+    if result < 9:
+        level = 'LOW'
+    elif result < 17:
+        level = 'MEDIUM'
+    elif result < 24:
+        level = 'HIGH'
+    else:
+        level = 'CRITICAL'
+    return level
