@@ -32,7 +32,7 @@ def get_agent_performance(mission_db, agent:dict, id:int):
     except ZeroDivisionError:
         success_rate = 0
     return {'data': {
-            'total': mission_db.count_missions_by_agent(),
+            'total': mission_db.count_missions_by_agent(id),
             'completed': completed,
             'failed': failed,
             'success_rate': f'{success_rate} %'

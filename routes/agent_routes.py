@@ -47,7 +47,7 @@ def update_agent(id:int, data:utils.AgentModelUpdating):
     logger.info('agent updated successfull')
     return {'msg': 'agent updated successfull'}
 
-@router.post('/{id}/deactivate')
+@router.put('/{id}/deactivate')
 def deactivate_agent(id:int):
     if not agent_db.get_agent_by_id(id):
         raise HTTPException(404, 'Agent not found')
