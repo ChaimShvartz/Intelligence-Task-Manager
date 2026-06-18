@@ -1,5 +1,5 @@
 from database.base_db import BaseDB
-from utils import InvalidAgentDetails
+# from utils import InvalidAgentDetails
 
 class AgentDB(BaseDB):
     def __init__(self):
@@ -12,13 +12,11 @@ class AgentDB(BaseDB):
         return self.get_by_id(id)
         
     def create_agent(self, data):
-        agent_id = self.create(data)
-        return self.get_by_id(agent_id)
+        return self.create(data)
     
     def update_agent(self, id:int, data:dict):
-        updated = self.update(id, data)
-        return self.get_by_id(id) if updated else {}
-    
+        return self.update(id, data)
+        
     # The following function is not used, I left it in light of the test requirements
     def deactivate_agent(self, id:int):  
         updated = self.update(id, {'is_active': False})
@@ -30,18 +28,14 @@ class AgentDB(BaseDB):
         with connection.cursor() as cursor:
             cursor.execute('UPDATE agents SET completed_missions = completed_missions + 1 WHERE id = %s', (id,))
             connection.commit()
-            updated = cursor.rowcount > 0
-        msg = 'The number of missions has been updated successfully' if updated else 'nothing updated'
-        return msg
+            return cursor.rowcount > 0
     
     def increment_failed(self, id:int):
         connection = self.connection
         with connection.cursor() as cursor:
             cursor.execute('UPDATE agents SET failed_missions = failed_missions + 1 WHERE id = %s', (id,))
             connection.commit()
-            updated = cursor.rowcount > 0
-        msg = 'The number of missions has been updated successfully' if updated else 'nothing updated'
-        return msg
+            return cursor.rowcount > 0
     
     # The following function is not used, I left it in light of the test requirements
     def get_agent_performance(self, id:int):
@@ -62,5 +56,6 @@ class AgentDB(BaseDB):
     
     def count_active_agents(self):
         return self.count('WHERE is_active = true')
+    
     
 agent_db = AgentDB()

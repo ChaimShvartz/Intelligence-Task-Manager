@@ -1,6 +1,6 @@
 from database.base_db import BaseDB
 from database.agent_db import agent_db
-from utils import AgentNotFoundError, MissionNotFoundError
+# from utils import AgentNotFoundError, MissionNotFoundError
 
 class MissionsDB(BaseDB):
     def __init__(self):
@@ -8,7 +8,7 @@ class MissionsDB(BaseDB):
 
     def create_mission(self, data:dict):
         id = self.create(data)
-        return self.get_by_id(id)
+        return id
 
     def get_all_missions(self):
         return self.get_all()
@@ -17,44 +17,11 @@ class MissionsDB(BaseDB):
         return self.get_by_id(id)
 
     def assign_mission(self, m_id:int, a_id:int):
-        agent = agent_db.get_by_id(a_id)
-        if not agent:
-            raise AgentNotFoundError
-        mission = self.get_by_id(m_id)
-        if not mission:
-            raise MissionNotFoundError
-        
-        if not agent['is_active']:
-            raise ValueError('Inactive agent')
-        if len(self.get_open_missions_by_agent(a_id)) >= 3:
-            raise ValueError('An agent cannot have more than 3 open missions at the same time')
-        if mission['risk_level'] == 'CRITICAL' and agent['agent_rank'] != 'Commander':
-            raise ValueError('Only a commander-ranked agent can receive critical missions')
-        if mission['status'] != 'NEW':
-            raise ValueError('It is not possible to assign a mission whose status is not NEW')
         self.update(m_id, {'assigned_agent_id': a_id})
         return self.update_mission_status(m_id, 'ASSIGNED')
         
-    def update_mission_status(self, id:int, status:str):
-        mission = self.get_by_id(id)
-        if not mission:
-            raise MissionNotFoundError
-        if status not in ('ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED'):
-            raise ValueError('invalid status')
-        
-        last_status = mission['status']
-        print((last_status))
-
-        if status == 'ASSIGNED' and last_status != 'NEW':
-            raise ValueError('Unable to assign a non-new mission')
-        if status == 'IN_PROGRESS' and last_status != 'ASSIGNED':
-            raise ValueError('Unable to start an unassociated mission')
-        if status in ('COMPLETED', 'FAILED') and last_status != 'IN_PROGRESS':
-            raise ValueError('Unable to complete a mission that is not in progress')
-        if status == 'CANCELLED' and last_status not in ('NEW', 'ASSIGNED'):
-            raise ValueError('It is not possible to cancel a mission once it has started.')
-        self.update(id, {'status': status})
-        return 'mission updated successfully'
+    def update_mission_status(self, id:int, status:str):      
+        return self.update(id, {'status': status})
 
     def get_open_missions_by_agent(self, id:int):
         with self.connection.cursor(dictionary=True) as cursor:
@@ -78,6 +45,10 @@ class MissionsDB(BaseDB):
             cursor.execute('SELECT * FROM agents ORDER BY completed_missions DESC LIMIT 1')
             return cursor.fetchone()
         
+    def count_missions_by_agent(self, id:int):
+        return self.count("SELETC count(*) FROM missions WHERE assigned_agent_id = %s", (id,))
+
+    # The following function is not used, I left it in light of the test requirements
     @staticmethod
     def get_risk_level(difficulty:int, importance:int):
         result = difficulty * 2 + importance

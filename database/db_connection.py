@@ -59,5 +59,7 @@ class ConnectionDB:
         with self.get_connection().cursor() as cursor:
             cursor.execute(cmd)
 
-db = ConnectionDB()
+    def close(self):
+        self.connection.close()
 
+db = ConnectionDB()

@@ -13,9 +13,9 @@ def create_mission(data:utils.MissionModelCreating):
         raise HTTPException(400, 'difficulty and importance fields must be in range(1, 10)')
     data['risk_level'] = utils.get_risk_level()
     logger.info('trying to create the mission')
-    mission = mission_db.create_mission(data)
+    id = mission_db.create_mission(data)
     logger.info('mission created successfully')
-    return {'msg': 'mission created successfull', 'data': mission}
+    return {'msg': 'mission created successfull','id': id}
 
 @router.get('')
 def get_all_missions():
@@ -24,24 +24,24 @@ def get_all_missions():
         logger.warning('query returned successfully but no missions yet')
     else:
         logger.info(f'returned {len(missions)} missions')
-    return {'msg': f'returns all missions', 'data': missions} 
+    return {'data': missions} 
 
 @router.get('/{id}')
 def get_mission_by_id(id:int):
     mission = mission_db.get_mission_by_id(id)
     if not mission:
-        raise utils.MissionNotFoundError
+        raise HTTPException(404, 'Mission not found')
     logger.info('returned a mission')
-    return {'msg': 'returns a mission', 'data': mission}
+    return {'data': mission}
 
-@router.post('/{id}/assign/{agent_id}')
+@router.put('/{id}/assign/{agent_id}')
 def assign_mission(id:int, agent_id:int):
     mission = mission_db.get_by_id(id)
     if not mission:
-        raise utils.MissionNotFoundError
+        raise HTTPException(404, 'Mission not found')
     agent = agent_db.get_by_id(agent_id)
     if not agent:
-        raise utils.AgentNotFoundError
+        raise HTTPException(404, 'Agent not found')
     if mission['status'] != 'NEW':
         raise HTTPException(400, 'Mission not available')
     if not agent['is_active']:
@@ -53,60 +53,52 @@ def assign_mission(id:int, agent_id:int):
     
     logger.info('tryung assign the mission')
     mission_db.update(id, {'assigned_agent_id': agent_id})
-    updated_mission = mission_db.update_mission_status(id, 'ASSIGNED')
+    mission_db.update_mission_status(id, 'ASSIGNED')
     logger.info('mission assigned successfully')
-    return {'msg': 'mission assigned successfully', 'data': updated_mission}
+    return {'msg': 'mission assigned successfully'}
 
-@router.post('/{id}/start')
+@router.put('/{id}/start')
 def start_mission(id:int):
     mission = mission_db.get_mission_by_id(id)
     if not mission:
-        raise ModuleNotFoundError
-    if mission['status'] != 'NEW':
-        raise HTTPException(400, )
+        raise HTTPException(404, 'Mission not found')
+    if mission['status'] != 'ASSIGNED':
+        raise HTTPException(400, 'Unable to start an unassociated mission')
+    mission_db.update_mission_status(id, 'IN_PROGRESS')
+    logger.info('mission started successfully')
+    return {'msg': 'mission started successfully'}
 
-@router.post('/{id}/complete')
+@router.put('/{id}/complete')
 def complete_mission(id:int):
-    pass
+    mission = mission_db.get_mission_by_id(id)
+    if not mission:
+        raise HTTPException(404, 'Mission not found')
+    if mission['status'] != 'IN_PROGRESS':
+        raise HTTPException(400, 'Unable to complete a mission that is not in progress')
+    mission_db.update_mission_status(id, 'COMPLETED')
+    logger.info('mission completed successfully')
+    agent_db.increment_completed(mission['assigned_agent_id'])
+    return {'msg': 'mission completed successfully'}
 
-@router.post('/{id}/fail')
+@router.put('/{id}/fail')
 def fail_mission(id:int):
-    pass
+    mission = mission_db.get_mission_by_id(id)
+    if not mission:
+        raise HTTPException(404, 'Mission not found')
+    if mission['status'] != 'IN_PROGRESS':
+        raise HTTPException(400, 'Unable to failed a mission that is not in progress')
+    mission_db.update_mission_status(id, 'FAILED')
+    logger.info('mission failed successfully')
+    agent_db.increment_failed(mission['assigned_agent_id'])
+    return {'msg': 'mission failed successfully'}
 
-@router.post('/{id}/cancel')
+@router.put('/{id}/cancel')
 def cancel_mission(id:int):
-    pass
-
-
-# @router.put('/{id}')
-# def update_agent(id:int, data:utils.AgentModelUpdating):
-#     data = data.model_dump(exclude_unset=True)
-#     if not data:
-#         raise HTTPException(400, 'nothing to update')
-#     if not agent_db.get_agent_by_id(id):
-#         raise utils.AgentNotFoundError
-#     logger.info('trying to update the agent')
-#     updated_agent = agent_db.update_agent(id, data)
-#     if not updated_agent:
-#         raise HTTPException(400, 'nothing updated')
-#     logger.info('agent updated successfull')
-#     return {'msg': 'agent updated successfull', 'data': updated_agent}
-
-# @router.post('/{id}/deactivate')
-# def deactivate_agent(id:int):
-#     if not agent_db.get_agent_by_id(id):
-#         raise utils.AgentNotFoundError
-#     logger.info('trying to deactivate the agent')
-#     updated_agent = agent_db.update_agent(id, {'is_active': False})
-#     if not updated_agent:
-#         raise HTTPException(400, 'agent already deactive')
-#     logger.info('agent deactivate successfull')
-#     return {'msg': 'agent deactivate successfull', 'data': updated_agent}
-
-# @router.get('/{id}/performance')
-# def get_agent_performance(id:int):
-#     agent = agent_db.get_agent_by_id(id)
-#     if not agent:
-#         raise utils.AgentNotFoundError
-#     logger.info("returns agent's performance")
-#     return utils.get_agent_performance(agent, id)
+    mission = mission_db.get_mission_by_id(id)
+    if not mission:
+        raise HTTPException(404, 'Mission not found')
+    if mission['status'] not in ('NEW', 'ASSIGNED'):
+        raise HTTPException(400, 'It is not possible to cancel a mission once it has started')
+    mission_db.update_mission_status(id, 'CANCELLED')
+    logger.info('mission cancelled successfully')
+    return {'msg': 'mission cancelled successfully'}

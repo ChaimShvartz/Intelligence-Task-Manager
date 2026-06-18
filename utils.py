@@ -1,14 +1,4 @@
 from pydantic import BaseModel
-from typing import Literal
-
-class InvalidAgentDetails(Exception):
-    pass
-
-class AgentNotFoundError(Exception):
-    detail = 'Agent not found'
-
-class MissionNotFoundError(Exception):
-    detail = 'Mission not found'
 
 class AgentModelCreating(BaseModel):
     name: str
@@ -26,21 +16,6 @@ class AgentModelUpdating(BaseModel):
     failed_missions: int | None = None
     agent_rank: str | None = None
 
-def get_agent_performance(agent:dict, id:int):
-    completed = agent['completed_missions']
-    failed = agent['failed_missions']
-    total = completed + failed
-    try:
-        success_rate = round(completed / total * 100, 2)
-    except ZeroDivisionError:
-        success_rate = 0
-    return {
-        'total': total,
-        'completed': completed,
-        'failed': failed,
-        'success_rate': f'{success_rate} %'
-    }
-
 class MissionModelCreating(BaseModel):
     title: str
     description: str
@@ -49,13 +24,28 @@ class MissionModelCreating(BaseModel):
     importance: int
     status: str | None = 'NEW'
 
+def get_agent_performance(mission_db, agent:dict, id:int):
+    completed = agent['completed_missions']
+    failed = agent['failed_missions']
+    try:
+        success_rate = round(completed / (completed + failed) * 100, 2)
+    except ZeroDivisionError:
+        success_rate = 0
+    return {'data': {
+            'total': mission_db.count_missions_by_agent(),
+            'completed': completed,
+            'failed': failed,
+            'success_rate': f'{success_rate} %'
+            }
+        }
+
 def get_risk_level(difficulty:int, importance:int):
     result = difficulty * 2 + importance
-    if result < 9:
+    if result <= 9:
         level = 'LOW'
-    elif result < 17:
+    elif result <= 17:
         level = 'MEDIUM'
-    elif result < 24:
+    elif result <= 24:
         level = 'HIGH'
     else:
         level = 'CRITICAL'
