@@ -1,17 +1,22 @@
 import mysql.connector
+from logs.config import logger
 
 class ConnectionDB:
     def __init__(self):
+        logger.info('Trying to establish a connection')
         self.connect()
 
     def get_connection(self):
         if not self.connection.is_connected():
+            logger.warning('The connection went wrong, returns a new one')
             self.connect()
+        logger.info('Connection established successfully')
         return self.connection
     
     def connect(self):
         self.connection = mysql.connector.connect(host='localhost',
                                                   user='root', password='1234')
+        self.create_database()
         
     def create_database(self):
         with self.get_connection().cursor() as cursor:
