@@ -93,19 +93,53 @@ Its method:\
 ## Endpoint list
 
 ### Agents
-[post] | /agent | create a new agent
-[get] | /agents | get all agents
-[get] | /agents/{id} | get agent by ID
-[put] | /agents/{id} | update agent
-[put] | /agents/{id}/deactivate | deactivate agent
+[post] | /agents | create an agent\
+[get] | /agents | get all agents\
+[get] | /agents/{id} | get an agent by ID\
+[put] | /agents/{id} | update agent\
+[put] | /agents/{id}/deactivate | deactivate agent\
 [get] | /agents/{id}/performance | get agent's performance
 
 ### Missions
+[post] | /missions | create a mission\
+[get] | /missions | get all missions\
+[get] | /missions | get a mission by ID\
+[put] | /missions/{id}/assign/{agent_id} | asign to an agent\
+[put] | /missions/{id}/start | start a mission\
+[put] | /missions/{id}/complete | end a mission at successfully\
+[put] | /missions/{id}/fail | end a mission at failed\
+[put] | /missions/{id}/cancel | cancel a mission
+
+### Reports
+[get] | /reports/summary | general summary \
+[get] | /reports/missions-by-status | get missions by status\
+[get] | /reports/top-agent | get the top agent
+
+## System flow
+
+route\
+  |\
+  |\
+  AgentDB / MissionDB/
+  |\
+  |\
+  BaseDB\
+  |\
+  |\
+  ConnectionDB
+  |\
+  |\
+  Save to DB
+
 
 
 ## Running instructions
 Make sure you don't have another MySQL container running so there is no port conflict.\
-Then run the following command in the terminal:
+To create and run Docker, run the following command in the terminal:
 
 docker run -d --name intelligence-mysql -e MYSQL_ROOT_PASSWORD=1234 \
   -e MYSQL_DATABASE=Intelligence_db -p 3306:3306 mysql:8.0
+
+Then start the server with the following command in the terminal: \
+
+uvicorn main:app
