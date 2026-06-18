@@ -32,10 +32,10 @@ class ConnectionDB:
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(50) NOT NULL,
         specialty VARCHAR(100) NOT NULL,
-        is_active BOOLEAN NOT NULL DEFAULT true,
-        completed_missions INT NOT NULL DEFAULT 0,
-        failed_missions INT NOT NULL DEFAULT 0,
-        agent_rank ENUM('Junior', 'Senior', 'Commander') NOT NULL
+        is_active BOOLEAN DEFAULT true,
+        completed_missions INT DEFAULT 0,
+        failed_missions INT DEFAULT 0,
+        agent_rank ENUM('Junior', 'Senior', 'Commander')
         )
         '''
         with self.get_connection().cursor() as cursor:
@@ -47,12 +47,12 @@ class ConnectionDB:
         title VARCHAR(50) NOT NULL,
         description TEXT NOT NULL,
         location VARCHAR(100) NOT NULL,
-        difficulty INT NOT NULL,
-        importance INT NOT NULL,
+        difficulty INT CHECK(difficulty BETWEEN 1 AND 10),
+        importance INT CHECK(importance BETWEEN 1 AND 10),
         status ENUM('NEW', 'ASSIGNED', 'IN_PROGRESS',
-          'COMPLETED', 'FAILED', 'CANCELLED') NOT NULL,
+          'COMPLETED', 'FAILED', 'CANCELLED') DEFAULT 'NEW',
         risk_level VARCHAR(10) NOT NULL,
-        assigned_agent_id INT DEFAULT NULL
+        assigned_agent_id INT
         )
         '''
         with self.get_connection().cursor() as cursor:
