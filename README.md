@@ -90,6 +90,19 @@ Its method:\
 - Only a task with the status IN_PROGRESS can be finished and changed to failed or completed.
 - Only a task with the status NEW or ASSIGNED can be canceled — otherwise an error.
 
+## Endpoint list
+
+### Agents
+[post] | /agent | create a new agent
+[get] | /agents | get all agents
+[get] | /agents/{id} | get agent by ID
+[put] | /agents/{id} | update agent
+[put] | /agents/{id}/deactivate | deactivate agent
+[get] | /agents/{id}/performance | get agent's performance
+
+### Missions
+
+
 ## Running instructions
 Make sure you don't have another MySQL container running so there is no port conflict.\
 Then run the following command in the terminal:
