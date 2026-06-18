@@ -7,7 +7,10 @@ class MissionsDB(BaseDB):
         super().__init__('missions')
 
     def create_mission(self, data:dict):
-        risk_level = self.get_risk_level(data['difficulty'], data['importance'])
+        try:
+            risk_level = self.get_risk_level(data['difficulty'], data['importance'])
+        except KeyError:
+            raise ValueError('mission must have difficulty and importance')
         data.update(risk_level)
         id = self.create(data)
         return self.get_by_id(id)
@@ -28,7 +31,7 @@ class MissionsDB(BaseDB):
         
         if not agent['is_active']:
             raise ValueError('Inactive agent')
-        if len(self.get_open_missions_by_agent(a_id) >= 3):
+        if len(self.get_open_missions_by_agent(a_id)) >= 3:
             raise ValueError('An agent cannot have more than 3 open missions at the same time')
         if mission['risk_level'] == 'CRITICAL' and agent['agent_rank'] != 'Commander':
             raise ValueError('Only a commander-ranked agent can receive critical missions')
@@ -59,7 +62,9 @@ class MissionsDB(BaseDB):
         return 'mission updated successfully'
 
     def get_open_missions_by_agent(self, id:int):
-        return self.count("WHERE assigned_agent_id = %s AND status IN ('ASSIGNED', 'IN_PROGRESS')", (id,))
+        with self.connection.cursor(dictionary=True) as cursor:
+            cursor.execute("SELETC * FROM missions WHERE assigned_agent_id = %s AND status IN ('ASSIGNED', 'IN_PROGRESS'", (id,))
+            return cursor.fetchall()
 
     def count_all_missions(self):
         return self.count()
