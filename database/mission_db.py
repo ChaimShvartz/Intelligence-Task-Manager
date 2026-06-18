@@ -46,7 +46,7 @@ class MissionsDB(BaseDB):
             return cursor.fetchone()
         
     def count_missions_by_agent(self, id:int):
-        return self.count("SELETC count(*) FROM missions WHERE assigned_agent_id = %s", (id,))
+        return self.count("WHERE assigned_agent_id = %s", (id,))
 
     # The following function is not used, I left it in light of the test requirements
     @staticmethod
