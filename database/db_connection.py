@@ -3,14 +3,13 @@ from logs.config import logger
 
 class ConnectionDB:
     def __init__(self):
-        logger.info('Trying to establish a connection')
+        logger.info('Connecting...')
         self.connect()
 
     def get_connection(self):
         if not self.connection.is_connected():
             logger.warning('The connection went wrong, returns a new one')
             self.connect()
-        logger.info('Connection established successfully')
         return self.connection
     
     def connect(self):
@@ -20,10 +19,12 @@ class ConnectionDB:
         
     def create_database(self):
         with self.get_connection().cursor() as cursor:
+            logger.info('Verify that the database exists')
             cursor.execute('CREATE DATABASE IF NOT EXISTS Intelligence_db')
             cursor.execute('USE Intelligence_db')
 
     def create_tables(self):
+        logger.info('Verify that the tables exist')
         self.create_agents_table()
         self.create_missions_table()
 
