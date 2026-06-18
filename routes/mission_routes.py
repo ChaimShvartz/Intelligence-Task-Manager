@@ -11,7 +11,7 @@ def create_mission(data:utils.MissionModelCreating):
     data = data.model_dump()
     if not (1 <= data['difficulty'] <= 10 and 1 <= data['importance'] <= 10):
         raise HTTPException(400, 'difficulty and importance fields must be in range(1, 10)')
-    data['risk_level'] = utils.get_risk_level()
+    data['risk_level'] = utils.get_risk_level(data['difficulty'], data['importance'])
     logger.info('trying to create the mission')
     id = mission_db.create_mission(data)
     logger.info('mission created successfully')
